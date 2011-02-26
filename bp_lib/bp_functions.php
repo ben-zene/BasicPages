@@ -48,6 +48,8 @@ function bp_url($page) {
 	global $bp_config;
 	//if the page is empty, just return the url
 	if (empty($page)) { return $bp_config['url']; }
+	//allow passthrough urls
+	if (substr($page, 0, 7) == 'http://' || substr($page, 0, 8) == 'https://') { return $page; }
 	//see if we have rewrite enabled
 	$prefix = (false === empty($bp_config['url_rewrite']) || substr($page,0,8) == 'bp_admin' || substr($page,0,10) == 'bp_content' || substr($page,0,6) == 'bp_lib' || substr($page,0,9) == 'bp_themes') ? '' : '?p=';
 	//fix formatting
