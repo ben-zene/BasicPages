@@ -59,6 +59,7 @@ if (isset($_POST['submit']) && $_POST['submit'] == 'Install' && $_POST['reqs'] =
 		'admin_email' => $_POST['admin_email'],
 		'default_theme' => 'basic',
 		'default_style' => 'blue-grey.css',
+		'navigation' => array(),
 	);
 	//write the config file
 	if (bp_write_config($bp_config, 'fresh install')) {
