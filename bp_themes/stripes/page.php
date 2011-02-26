@@ -33,10 +33,13 @@ Author: Ben Merrill <ben@basicpages.org>
 	</div>
 	<div id="footer">
 		<div class="inside_container" align="left">
-			<h2>Navigation</h2>
-			<?php foreach ($bp->page_navigation() as $nav_page => $nav_title) { ?>
-			<a href="<?php print bp_url($nav_page);?>" class="nav_a"><?php print $nav_title;?></a>
-			<? } ?>
+			<?php $navigation = $bp->page_navigation(); 
+			if (false === empty($navigation)) { ?>
+				<h2>Navigation</h2>
+				<?php foreach ($navigation as $nav_page => $nav_title) { ?>
+				<a href="<?php print bp_url($nav_page);?>" class="nav_a"><?php print $nav_title;?></a>
+				<?php } 
+			}?>
 			<div id="credits"><?php print $bp->page_credits();?></div>
 		</div>
 	</div>
