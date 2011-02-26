@@ -300,6 +300,18 @@ switch ($_GET['m']) {
 							},
 							tags: ["img"],
 							tooltip: "Insert an Image"
+						},
+						googlemap: { 
+							groupIndex: 6,
+							exec: function () {
+								var addr = prompt('Enter the Address for your Google Map');
+								if (addr) { 
+									this.insertHtml('<img src="http://maps.google.com/maps/api/staticmap?center='+addr+'&zoom=16&size=550x300&maptype=hybrid&markers=color:yellow|label:X|'+addr+'&sensor=false" width="550" height="300" />'); 
+									this.saveContent();
+								}
+							},
+							tooltip: "Insert a Google Map",
+							visible: true 
 						}
 					},
 					events: {
