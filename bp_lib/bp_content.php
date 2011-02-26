@@ -425,10 +425,12 @@ class bp_Content {
 	public function page_content() {
 		if (empty($this->display)) {
 			if ($this->has_unpublished && bp_admin_check_auth()) {
-				print bp_msg('This page has not been published. <a href="'.bp_url('bp_admin/index.php?m=edit&p='.$this->page).'">Edit</a> or <a href="'.bp_url($this->page.'?m=preview').'">Preview</a> this Page.');
+				return '<h1>This page has not been published.</h1><div><a href="'.bp_url('bp_admin/index.php?m=edit&p='.$this->page).'">Edit</a> or <a href="'.bp_url($this->page.'&m=preview').'">Preview</a> this page.</div>';
 			}
-			header('Status: 404 Not Found', true, 404);
-			return '<h1>Content Unavailable</h1><div>Unfortunately, we were not able to find what you were looking for. Please check back soon.</div>';
+			else {
+				header('Status: 404 Not Found', true, 404);
+				return '<h1>Content Unavailable</h1><div>Unfortunately, we were not able to find what you were looking for. Please check back soon.</div>';
+			}
 		}
 		//add Edit Page link
 		if (bp_admin_check_auth()) {
