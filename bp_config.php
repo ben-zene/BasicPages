@@ -1,16 +1,7 @@
 <?php defined("BP_START") || die("Unauthorized Access");
+/* This file was automatically generated on 2011-02-25T18:47:41-07:00 by a fresh install. */
 
 define("PATH", dirname(__FILE__));
 
 $bp_config = array (
-  'admin_user' => '',
-  'admin_pass' => '',
-  'admin_token' => '',
-  'admin_email' => '',
-  'url' => '',
-  'default_theme' => 'basic',
-  'default_style' => 'blue-grey.css',
-  'navigation' => 
-  array (
-  ),
 );
