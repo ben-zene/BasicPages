@@ -1,9 +1,8 @@
-/* BasicPages has made quite a few modifications to the original plugin.
-	 -inserted body background:#fff;
-	 -custom insertImage and googlemap functions
-	 -reordered justification tools
-	 -added formatXml function to the top and to saveContent
-*/
+/** BasicPages Changes:
+ * -Reorder of Justify, Undo/Redo tools
+ * -Add "background-color:#fff;" to wysiwyg body
+ * -Add format_xml function and apply it to html hide mode
+ */
 
 /**
  * WYSIWYG - jQuery plugin 0.95
@@ -20,16 +19,11 @@
 
 /*jslint browser: true, forin: true */
 
-/*
-:TODO:
-1) documentSelection || getSelection || window.getSelection ???
- */
-
-function formatXml(xml) {
+var format_xml = (function(xml) {
 	var reg = /(>)\s?(<\/?)/g;
 	xml = xml.replace(reg, '$1\r\n$2');
 	return xml.replace("/\s+$/g", "");
-}
+});
 
 (function ($) {
 	/* Wysiwyg namespace: private properties and methods */
@@ -130,6 +124,7 @@ function formatXml(xml) {
 						this.setContent($(this.original).val());
 						$(this.original).hide();
 						this.editor.show();
+						this.ui.toolbar.find(".html").removeClass("active");
 					} else {
 						this.saveContent();
 						$(this.original).css({
@@ -137,7 +132,12 @@ function formatXml(xml) {
 							height: this.element.height() - this.ui.toolbar.height() - 6,
 							resize: "none"
 						}).show();
+						/* BasicPages addition */
+						var formatted = format_xml($(this.original).val());
+						$(this.original).val(formatted);
+						/* end BasicPages */
 						this.editor.hide();
+						this.ui.toolbar.find(".html").addClass("active");
 					}
 
 					this.viewHTML = !(this.viewHTML);
@@ -170,6 +170,7 @@ function formatXml(xml) {
 				visible: true,
 				exec: function () {
 					var self = this;
+
 					if ($.wysiwyg.controls && $.wysiwyg.controls.image) {
 						$.wysiwyg.controls.image.init(this);
 					} else if ($.wysiwyg.autoload) {
@@ -181,7 +182,7 @@ function formatXml(xml) {
 					}
 				},
 				tags: ["img"],
-				tooltip: "Insert an Image"
+				tooltip: "Insert image"
 			},
 
 			insertOrderedList: {
@@ -247,7 +248,7 @@ function formatXml(xml) {
 				},
 				tooltip: "Justify Center"
 			},
-			
+
 			justifyRight: {
 				groupIndex: 1,
 				visible: true,
@@ -256,7 +257,7 @@ function formatXml(xml) {
 				},
 				tooltip: "Justify Right"
 			},
-
+			
 			justifyFull: {
 				groupIndex: 1,
 				visible: true,
@@ -270,13 +271,14 @@ function formatXml(xml) {
 				groupIndex: 10,
 				visible: false,
 				exec: function () {
-					var selection = this.documentSelection();
-					if ($("<div/>").append(selection).children().length > 0) {
-						selection = $(selection).attr("dir", "ltr");
-					} else {
-						selection = $("<div/>").attr("dir", "ltr").append(selection);
+					var range = this.getInternalRange(),
+					p = this.dom.getElement("p");
+
+					if (!p) {
+						return false;
 					}
-					this.editorDoc.execCommand("inserthtml", false, $("<div/>").append(selection).html());
+
+					$(p).attr("dir", "ltr");
 				},
 				tooltip : "Left to Right"
 			},
@@ -293,12 +295,6 @@ function formatXml(xml) {
 				tooltip: "Paste"
 			},
 
-			redo: {
-				groupIndex: 4,
-				visible: true,
-				tooltip: "Redo"
-			},
-
 			removeFormat: {
 				groupIndex: 10,
 				visible: true,
@@ -312,13 +308,14 @@ function formatXml(xml) {
 				groupIndex: 10,
 				visible: false,
 				exec: function () {
-					var selection = this.documentSelection();
-					if ($("<div/>").append(selection).children().length > 0) {
-						selection = $(selection).attr("dir", "rtl");
-					} else {
-						selection = $("<div/>").attr("dir", "rtl").append(selection);
+					var range = this.getInternalRange(),
+						p = this.dom.getElement("p");
+
+					if (!p) {
+						return false;
 					}
-					this.editorDoc.execCommand("inserthtml", false, $("<div/>").append(selection).html());
+
+					$(p).attr("dir", "rtl");
 				},
 				tooltip : "Right to Left"
 			},
@@ -364,23 +361,15 @@ function formatXml(xml) {
 				tooltip: "Undo"
 			},
 			
-			//BasicPages custom function
-			googlemap: { 
-				groupIndex: 6,
-				exec: function () {
-					var addr = prompt('Enter the Address for your Google Map');
-					if (addr) { 
-						this.insertHtml('<img src="http://maps.google.com/maps/api/staticmap?center='+addr+'&zoom=16&size=550x300&maptype=hybrid&markers=color:yellow|label:X|'+addr+'&sensor=false" width="550" height="300" />'); 
-						this.saveContent();
-					}
-				},
-				tooltip: "Insert a Google Map",
-				visible: true 
+			redo: {
+				groupIndex: 4,
+				visible: true,
+				tooltip: "Redo"
 			}
 		};
 
 		this.defaults = {
-			html: '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body style="margin: 0px;background:#fff;">INITIAL_CONTENT</body></html>',
+			html: '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body style="margin: 0px;background-color:#fff;">INITIAL_CONTENT</body></html>',
 			debug: false,
 			controls: {},
 			css: {},
@@ -400,6 +389,7 @@ function formatXml(xml) {
 			},
 			toolbarHtml: '<ul role="menu" class="toolbar"></ul>',
 			removeHeadings: false,
+			replaceDivWithP: false,
 			resizeOptions: false,
 			rmMsWordMarkup: false,
 			rmUnusedControls: false,	// https://github.com/akzhan/jwysiwyg/issues/52
@@ -767,13 +757,16 @@ function formatXml(xml) {
 			return this;
 		};
 
-		this.documentSelection = function () {
-			if (this.editorDoc.getSelection) {
-				return this.getInternalSelection().toString();
+		this.getRangeText = function () {
+			var r = this.getInternalRange();
+
+			if (r.toString) {
+				r = r.toString();
+			} else if (r.text) {	// IE
+				r = r.text;
 			}
-			if (this.editorDoc.selection) {
-				return this.editorDoc.selection().createRange().text;
-			}
+
+			return r;
 		};
 		//not used?
 		this.execute = function (command, arg) {
@@ -1055,7 +1048,7 @@ function formatXml(xml) {
 					/**
 					 * @link http://code.google.com/p/jwysiwyg/issues/detail?id=144
 					 */
-					.replace(/INITIAL_CONTENT/, function () { return self.initialContent; })
+					.replace(/INITIAL_CONTENT/, function () { return self.wrapInitialContent(); })
 			);
 			self.editorDoc.close();
 
@@ -1182,6 +1175,7 @@ function formatXml(xml) {
 							"rel":		"stylesheet",
 							"type":		"text/css"
 						});
+
 						$(self.editorDoc).find("head").append(stylesheet);
 					}
 				} else {
@@ -1334,7 +1328,31 @@ function formatXml(xml) {
 					content = content.replace(/<br\/?>$/, "");
 				}
 
-				$(this.original).val(formatXml(content));
+				if (this.options.replaceDivWithP) {
+					newContent = $("<div/>").addClass("temp").append(content);
+
+					newContent.children("div").each(function () {
+						var element = $(this), p = element.find("p"), i;
+
+						if (0 === p.length) {
+							p = $("<p></p>");
+
+							if (this.attributes.length > 0) {
+								for (i = 0; i < this.attributes.length; i += 1) {
+									p.attr(this.attributes[i].name, element.attr(this.attributes[i].name));
+								}
+							}
+
+							p.append(element.html());
+
+							element.replaceWith(p);
+						}
+					});
+					
+					content = newContent.html();
+				}
+
+				$(this.original).val(content);
 
 				if (this.options.events && this.options.events.save) {
 					this.options.events.save.call(this);
@@ -1392,13 +1410,25 @@ function formatXml(xml) {
 
 			return self;
 		};
+
+		this.wrapInitialContent = function () {
+			var content = this.initialContent,
+				found = content.match(/<\/?p>/gi);
+
+			if (!found) {
+				return "<p>" + content + "</p>";
+			} else {
+				// :TODO: checking/replacing
+			}
+
+			return content;
+		};
 	}
 
 	/*
 	 * Wysiwyg namespace: public properties and methods
 	 */
 	$.wysiwyg = {
-		
 		/**
 		 * Custom control support by Alec Gorge ( http://github.com/alecgorge )
 		 */
@@ -1454,41 +1484,6 @@ function formatXml(xml) {
 
 		console: console, // let our console be available for extensions
 
-		createLink: function (object, szURL) {
-			if ("object" !== typeof (object) || !object.context) {
-				object = this;
-			}
-
-			if (!object.each) {
-				console.error("Something goes wrong, check object");
-			}
-
-			return object.each(function () {
-				var oWysiwyg = $(this).data("wysiwyg"),
-					selection;
-
-				if (!oWysiwyg) {
-					return this;
-				}
-
-				if (!szURL || szURL.length === 0) {
-					return this;
-				}
-
-				selection = oWysiwyg.documentSelection();
-
-				if (selection && selection.length > 0) {
-					if ($.browser.msie) {
-						oWysiwyg.ui.focus();
-					}
-					oWysiwyg.editorDoc.execCommand("unlink", false, null);
-					oWysiwyg.editorDoc.execCommand("createLink", false, szURL);
-				} else if (oWysiwyg.options.messages.nonSelection) {
-					window.alert(oWysiwyg.options.messages.nonSelection);
-				}
-			});
-		},
-
 		destroy: function (object) {
 			if ("object" !== typeof (object) || !object.context) {
 				object = this;
@@ -1527,8 +1522,6 @@ function formatXml(xml) {
 
 			return $(oWysiwyg.editorDoc);
 		},
-		
-		
 
 		getContent: function (object) {
 			if ("object" !== typeof (object) || !object.context) {

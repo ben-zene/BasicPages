@@ -19,7 +19,7 @@
 	*/
 	$.wysiwyg.controls.link = {
 		init: function (Wysiwyg) {
-			var self = Wysiwyg, elements, dialog, szURL, a, selection,
+			var self = this, elements, dialog, szURL, a, selection,
 				formLinkHtml, formTextLegend, formTextUrl, formTextTitle, formTextTarget,
 				formTextSubmit, formTextReset;
 
@@ -47,7 +47,7 @@
 				'<input type="reset" value="' + formTextReset + '"/></fieldset></form>';
 
 			a = {
-				self: self.dom.getElement("a"), // link to element node
+				self: Wysiwyg.dom.getElement("a"), // link to element node
 				href: "http://",
 				title: "",
 				target: ""
@@ -73,8 +73,8 @@
 
 				dialog.dialog({
 					modal: true,
-					width: self.defaults.formWidth,
-					height: self.defaults.formHeight,
+					width: Wysiwyg.defaults.formWidth,
+					height: Wysiwyg.defaults.formHeight,
 					open: function (ev, ui) {
 						$("input:submit", dialog).click(function (e) {
 							e.preventDefault();
@@ -95,29 +95,30 @@
 							} else {
 
 								if ($.browser.msie) {
-									self.ui.returnRange();
+									Wysiwyg.ui.returnRange();
 								}
 
 								//Do new link element
-								selection = this.range.apply(self);
+								selection = Wysiwyg.getRangeText();
+								img = Wysiwyg.dom.getElement("img");
 
-								if (selection && selection.length > 0) {
+								if ((selection && selection.length > 0) || img) {
 									if ($.browser.msie) {
-										self.ui.focus();
+										Wysiwyg.ui.focus();
 									}
 
 									if ("string" === typeof (szURL)) {
 										if (szURL.length > 0) {
-											self.editorDoc.execCommand("createLink", false, szURL);
+											Wysiwyg.editorDoc.execCommand("createLink", false, szURL);
 										} else {
-											self.editorDoc.execCommand("unlink", false, null);
+											Wysiwyg.editorDoc.execCommand("unlink", false, null);
 										}
 									}
 
-									a = self.dom.getElement("a");
+									a = Wysiwyg.dom.getElement("a");
 									$(a).attr("href", szURL).attr("title", title).attr("target", target);
-								} else if (self.options.messages.nonSelection) {
-									window.alert(self.options.messages.nonSelection);
+								} else if (Wysiwyg.options.messages.nonSelection) {
+									window.alert(Wysiwyg.options.messages.nonSelection);
 								}
 							}
 							$(dialog).dialog("close");
@@ -137,49 +138,73 @@
 
 					if ("string" === typeof (szURL)) {
 						if (szURL.length > 0) {
-							a.href = szURL;
+							$(a.self).attr("href", szURL);
 						} else {
 							$(a.self).replaceWith(a.self.innerHTML);
 						}
 					}
 				} else {
 					//Do new link element
-					selection = this.range.apply(self);
+					selection = Wysiwyg.getRangeText();
+					img = Wysiwyg.dom.getElement("img");
 
-					if (selection && selection.length > 0) {
+					if ((selection && selection.length > 0) || img) {
 						if ($.browser.msie) {
-							self.ui.focus();
-							self.editorDoc.execCommand("createLink", true, null);
+							Wysiwyg.ui.focus();
+							Wysiwyg.editorDoc.execCommand("createLink", true, null);
 						} else {
 							szURL = window.prompt(formTextUrl, a.href);
 
 							if ("string" === typeof (szURL)) {
 								if (szURL.length > 0) {
-									self.editorDoc.execCommand("createLink", false, szURL);
+									Wysiwyg.editorDoc.execCommand("createLink", false, szURL);
 								} else {
-									self.editorDoc.execCommand("unlink", false, null);
+									Wysiwyg.editorDoc.execCommand("unlink", false, null);
 								}
 							}
 						}
-					} else if (self.options.messages.nonSelection) {
-						window.alert(self.options.messages.nonSelection);
+					} else if (Wysiwyg.options.messages.nonSelection) {
+						window.alert(Wysiwyg.options.messages.nonSelection);
 					}
 				}
 			}
 
-			$(self.editorDoc).trigger("wysiwyg:refresh");
-		},
+			$(Wysiwyg.editorDoc).trigger("wysiwyg:refresh");
+		}
+	};
 
-		range: function () {
-			var r = this.getInternalRange();
+	$.wysiwyg.createLink = function (object, szURL) {
+		if ("object" !== typeof (object) || !object.context) {
+			object = this;
+		}
 
-			if (r.toString) {
-				r = r.toString();
-			} else if (r.text) {	// IE
-				r = r.text;
+		if (!object.each) {
+			console.error("Something goes wrong, check object");
+		}
+
+		return object.each(function () {
+			var oWysiwyg = $(this).data("wysiwyg"),
+				selection;
+
+			if (!oWysiwyg) {
+				return this;
 			}
 
-			return r;
-		}
-	}
+			if (!szURL || szURL.length === 0) {
+				return this;
+			}
+
+			selection = oWysiwyg.getRangeText();
+
+			if (selection && selection.length > 0) {
+				if ($.browser.msie) {
+					oWysiwyg.ui.focus();
+				}
+				oWysiwyg.editorDoc.execCommand("unlink", false, null);
+				oWysiwyg.editorDoc.execCommand("createLink", false, szURL);
+			} else if (oWysiwyg.options.messages.nonSelection) {
+				window.alert(oWysiwyg.options.messages.nonSelection);
+			}
+		});
+	};
 })(jQuery);
