@@ -178,6 +178,8 @@ class bp_Content {
 		$this->meta['style'] = $bp_config['default_style'];
 		$this->meta['nav'] = 1;
 		$this->meta['sitemap'] = 1;
+		$this->meta['keywords'] = '';
+		$this->meta['description'] = '';
 		if ($this->_store_content($page, 'unpublished')) {
 			//see if we need to set the home page (should only occur on first page)
 			if (empty($bp_config['home_page'])) { 
