@@ -98,13 +98,14 @@ function bp_grab_themes() {
 
 //look for page templates we can use
 function bp_grab_page_templates() {
-	$templates = array();
+	$templates = array('blank' => 'Blank Page');
 	$templates_dir = @opendir(PATH.'/bp_lib/page_templates');
 	if (false === $templates_dir) { return $templates; }
 	while (false !== ($template_dir = readdir($templates_dir))) {
 		if (is_dir(PATH.'/bp_lib/page_templates/'.$template_dir) || false === is_readable(PATH.'/bp_lib/page_templates/'.$template_dir)) { continue; }
 		if (substr($template_dir,0,1) == '.' || substr($template_dir, -5) != '.html') { continue; }
-		$templates[] = substr($template_dir, 0, -5);
+		$tmp = substr($template_dir, 0, -5);
+		$templates[$tmp] = ucwords(str_replace("_", " ", $tmp));
 	}
 	return $templates;
 }

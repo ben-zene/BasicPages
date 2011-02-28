@@ -168,7 +168,7 @@ class bp_Content {
 		$page_file = PATH.'/bp_content/'.$page.'.php';
 		if (file_exists($page_file)) { $this->debug[] = 'The specified page name already exists.'; return false; }
 		//set default content
-		if ($page_template != 'blank' && in_array($page_template, bp_grab_page_templates())) { 
+		if ($page_template != 'blank' && array_key_exists($page_template, bp_grab_page_templates())) { 
 			$this->content = file_get_contents(PATH.'/bp_lib/page_templates/'.$page_template.'.html');
 		}
 		else {
