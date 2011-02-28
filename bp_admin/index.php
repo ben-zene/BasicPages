@@ -159,7 +159,26 @@ switch ($_GET['m']) {
 	default:
 		$existing_pages = bp_admin_list_pages();
 		if (empty($existing_pages)) { ?>
-		
+		<div style="margin:10px 0px 15px;padding:15px;background-color:#fdd;" class="corners">
+			<h2 class="bright" style="margin-top:0px;">Getting Started</h3>
+			<div>BasicPages will help you quickly create a basic website.</div>
+			<div style="margin-top:10px;">First, let's create a Home page.</div>
+			<div style="margin-top:10px;">We'll use the "Business Profile" template to help you design the initial content.</div>
+		</div>
+		<?php } elseif (count($existing_pages) == 1) { ?>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$("#new_page").hide();
+				$("#new_page_trigger").click(function() {
+					$("#new_page").slideToggle("fast");
+				});
+			});
+		</script>
+		<div style="margin:10px 0px 15px;padding:15px;background-color:#fdd;" class="corners">
+			<h2 class="bright" style="margin-top:0px;">Next Steps</h3>
+			<div>Now that you have your first page, consider adding another with a different purpose, such as a display of your work, or maybe a contact form.</div>
+			<div style="margin-top:10px;">You can also edit your existing pages below.</div>
+		</div>
 		<?php } else { ?>
 		<script type="text/javascript">
 			$(document).ready(function() {
@@ -169,25 +188,28 @@ switch ($_GET['m']) {
 				});
 			});
 		</script>
-
 		<?php } ?>
 		<h2 style="cursor:pointer;" id="new_page_trigger" class="bright">Create a New Page &raquo;</h2>
 		<div id="new_page" style="padding:5px 15px 10px;">
 			<form action="" method="post">
-			<h3><span style="color:#666;">Step 1:</span> Page Name/URL</h3>
+			<h3><span style="color:#666;">Step 1:</span> Give your page a name.</h3>
 			<div style="width:650px;padding:0px 0px 10px;">
-				<div>Select a name that is loaded with keywords, and is url-friendly.</div>
-				<div class="tooltip">(eg. company_info, my-product-is-the-best, etc)</div>
-				<div style="padding:5px 0px 0px;"><input type="text" name="page" value="" style="width:350px;" /></div>
+					<?php if (empty($existing_pages)) { ?>
+					<div>This first page will be your Home Page, but you can call it anything you want.</div>
+					<div class="tooltip" style="padding-top:3px;">For example, call it "Home", "Introduction", or "Welcome".</div>
+					<?php } else { ?>
+					<div>Select a name that is loaded with keywords, and is url-friendly. </div>
+					<div class="tooltip" style="padding-top:3px;">(eg. company_info, my-product-is-the-best, etc)</div>
+					<?php } ?>
+				<div style="padding:5px 0px 0px;"><input type="text" name="page" value="<?php if (empty($existing_pages)) { print 'Home'; } ?>" style="width:350px;" /></div>
 			</div>
 			
-			<h3 style="margin-top:10px;"><span style="color:#666;">Step 2:</span> Page Template</h3>
+			<h3 style="margin:10px 0px 5px;"><span style="color:#666;">Step 2:</span> Select a page template.</h3>
 			<div style="width:650px;padding:0px 0px 10px;">
-				<div>Start with a blank page, or use a page template to get you going.</div>
+				<div>You can start with a blank page, or use a template to get you going.</div>
 				<div style="padding:5px 0px 0px;"><select name="page_template">
-					<option value="blank">Blank Page</option>
-					<?php foreach (bp_grab_page_templates() as $pt) { ?>
-					<option value="<?php print $pt;?>"><?php print ucwords(str_replace("_", " ", $pt));?></option>
+					<?php foreach (bp_grab_page_templates() as $pt => $lbl) { ?>
+					<option value="<?php print $pt;?>" <?php if (empty($existing_pages) && $pt == 'business_profile') { print 'selected="selected"'; } ?>><?php print $lbl;?></option>
 					<? } ?>
 				</select></div>
 			</div>
@@ -201,7 +223,7 @@ switch ($_GET['m']) {
 		if (false === empty($existing_pages)) { 
 			?>
 			<h2><span style="color:#999;">or</span> Edit an Existing Page</h2>
-			<div style="padding:0px 0px 10px;">
+			<div style="padding:5px 0px;">
 			<table cellspacing="0" cellpadding="4" style="width:100%;">
 			<?php
 			$i = 1;
@@ -209,7 +231,7 @@ switch ($_GET['m']) {
 				$bgc = (($i % 2) == 1) ? '#f6f6ff' : '#fff';
 				?>
 				<tr style="color:#666;font-size:12px;background-color:<?php print $bgc;?>;">
-					<td style="padding:0px 0px 0px 20px;"><a href="<?php print bp_url($details['name']);?>" style="font-size:14px;" title="<?php print $details['name'];?>"><?php print ((strlen($details['name']) > 30) ? substr($details['name'], 0, 30).'...': $details['name']);?></a> <?php print $details['tag'];?></td>
+					<td style="padding:0px 0px 0px 22px;"><a href="<?php print bp_url($details['name']);?>" style="font-size:14px;" title="<?php print $details['name'];?>"><?php print ((strlen($details['name']) > 30) ? substr($details['name'], 0, 30).'...': $details['name']);?></a> <?php print $details['tag'];?></td>
 					<td style="padding-right:20px;width:110px;"><?php print (($details['status'] == 'Corrupt') ? '<span class="bright">'.$details['status'].'</span>' : $details['status']);?></td>
 					<td style="width:140px;"><?php print $details['actions'];?></td>
 				</tr>
