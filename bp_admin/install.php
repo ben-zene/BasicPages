@@ -158,7 +158,8 @@ if (isset($_POST['submit']) && $_POST['submit'] == 'Install' && $_POST['reqs'] =
 		<div style="padding-bottom:5px;"><input type="text" name="url" value="<?php print $bp_config['url'];?>" style="width:300px;" /></div>
 		<h3>Admin User</h3>
 		<div style="padding-bottom:5px;"><input type="text" name="admin_user" value="admin" style="width:300px;" /></div>
-		<h3>Admin Password</h3>
+		<h3 style="margin-bottom:3px;">Admin Password</h3>
+		<div class="tooltip">Careful who is around, this is not masked!</div>
 		<div style="padding-bottom:5px;"><input type="text" name="admin_pass" value="" style="width:300px;" /></div>
 		<h3>Admin Email</h3>
 		<div style="padding-bottom:5px;"><input type="text" name="admin_email" value="you@yourdomain.com" style="width:300px;" /></div>
