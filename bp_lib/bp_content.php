@@ -245,11 +245,9 @@ class bp_Content {
 		$this->meta['keywords'] = $options['keywords'];
 		$this->meta['description'] = $options['description'];
 		$this->content = $content;
-		//save navigation (if changed)
-		//if the page is not in nav and it should be (and we're publishing), OR if the nav title changed, set it in place
-		$nav_title = str_replace(array('_'), array(' '), $page);
-		if ((false === empty($this->meta['nav']) && false === @array_key_exists($page, $bp_config['navigation']) && $options['publish'] == 1) || (isset($bp_config['navigation'][$page]) && $bp_config['navigation'][$page] != $nav_title)) {
-			$bp_config['navigation'][$page] = $nav_title;
+		//save navigation (if the page is not in nav and it should be (and we're publishing))
+		if (false === empty($this->meta['nav']) && false === @array_key_exists($page, $bp_config['navigation']) && $options['publish'] == 1) {
+			$bp_config['navigation'][$page] = str_replace(array('_'), array(' '), $page);
 			bp_write_config($bp_config, 'navigation change');
 		}
 		//if we don't want this page in nav, unset it and write out
@@ -299,7 +297,7 @@ class bp_Content {
 			$title = $bp_config['navigation'][$page];
 			unset($bp_config['navigation'][$page]);
 			//TODO: splice in the new page where the old one was
-			$bp_config['navigation'][$new_page] = str_replace(array('_'), array(' '), $page);
+			$bp_config['navigation'][$new_page] = str_replace(array('_'), array(' '), $new_page);
 			bp_write_config($bp_config, 'navigation change');
 		}
 		//do the rename
@@ -344,6 +342,18 @@ class bp_Content {
 		return false;
 	}
 	
+	//remove this page from navigation
+	public function remove_nav() {
+		global $bp_config;
+		if (false === @array_key_exists($this->page, $bp_config['navigation'])) { return false; }
+		//remove option
+		$this->meta['nav'] = 0;
+		$this->_store_content($this->page);
+		//remove from nav
+		unset($bp_config['navigation'][$this->page]);
+		return bp_write_config($bp_config, 'navigation change');
+	}
+	
 	public function mark_home($page) {
 		global $bp_config;
 		//make sure we have permissions
@@ -353,6 +363,12 @@ class bp_Content {
 		}
 		//set the page as home
 		$bp_config['home_page'] = $page;
+		//if this page is set in navigation, let's automatically move it to the top
+		if (@array_key_exists($page, $bp_config['navigation'])) {
+			$title = $bp_config['navigation'][$page];
+			unset($bp_config['navigation'][$page]);
+			$bp_config['navigation'] = array_merge(array($page => $title), $bp_config['navigation']);
+		}
 		return bp_write_config($bp_config, 'home page set');
 	}
 	
@@ -453,6 +469,10 @@ class bp_Content {
 	public function page_navigation() {
 		global $bp_config;
 		if (empty($bp_config['navigation'])) { return array(); }
+		//walk through and remove slashes, if necessary
+		foreach ($bp_config['navigation'] as $page => $title) {
+			$bp_config['navigation'][$page] = stripslashes($title);
+		}
 		return $bp_config['navigation'];
 	}
 	

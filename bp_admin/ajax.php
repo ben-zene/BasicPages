@@ -73,6 +73,31 @@ switch ($_POST['m']) {
 			die(json_encode(array('success' => 1, 'msg' => $filename)));
 		}
 	break;
+	case 'nav_save':
+		if (false === is_array($_POST['nav'])) {
+			die(json_encode(array('success' => 0, 'msg' => 'Save Failed. We couldn\'t decode the object.')));
+		}
+		//check for pages that need to be removed
+		$removals = array_diff_assoc($bp_config['navigation'], $_POST['nav']);
+		if (false === empty($removals)) {
+			foreach ($removals as $page => $title) {
+				//no need to remove nav option if it's an outside link
+				if (substr($page, 0, 7) == 'http://' || substr($page, 0, 8) == 'https://') { continue; }
+				//remove the nav option
+				$bp = new bp_Content($page);
+				$bp->remove_nav();
+			}
+		}
+		//add it to the config
+		$bp_config['navigation'] = $_POST['nav'];
+		//var_dump($bp_config['navigation']);
+		if (bp_write_config($bp_config, 'navigation change')) {
+			die(json_encode(array('success' => 1, 'msg' => 'Navigation Saved.')));
+		}
+		else {
+			die(json_encode(array('success' => 0, 'msg' => 'Save Failed.')));
+		}
+	break;
 	default:
 		die(json_encode(array('success' => 0, 'msg' => 'Nothing to do')));
 	break;

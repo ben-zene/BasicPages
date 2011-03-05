@@ -142,14 +142,22 @@ require_once(PATH.'/bp_admin/header.php');
 ?>
 
 <table cellspacing="0" cellpadding="0" style="width:100%;">
-<tr><td style="width:24px;"><img src="<?php print bp_url('bp_admin/bp_logo.gif');?>" style="height:28px;" /></td><td><h1 style="margin:0px;padding-top:0px;"><a href="<?php print bp_url('');?>" target="_blank"><?php print str_replace(array('http://', 'https://'), '', $bp_config['url']);?></a></h1></td><td align="right">
-<a href="<?php print bp_url('bp_admin/index.php');?>" style="font-weight:bold;">Pages</a> 
-	&bull; <a href="<?php print bp_url('bp_admin/index.php?m=config');?>">Config</a> 
-	&bull; <a href="<?php print bp_url('bp_admin/login.php?logout');?>">Logout</a> 
-	<?php if (empty($bp_config['donate'])) { ?>
-	&bull; <a href="<?php print bp_url('bp_admin/index.php?m=donate');?>" class="bright">Donate!</a>
-	<? } ?>
-</td></tr>
+<tr>
+	<td style="width:24px;"><img src="<?php print bp_url('bp_admin/bp_logo.gif');?>" style="height:28px;" /></td>
+	<?php 
+	$display_url = str_replace(array('http://', 'https://'), '', $bp_config['url']); 
+	if (strlen($display_url) > 26) { $display_url = substr($display_url, 0, 26).'…'; }
+	?>
+	<td><h1 style="margin:0px;padding-top:0px;"><a href="<?php print bp_url('');?>" target="_blank" title="<?php print $bp_config['url'];?>"><?php print $display_url; ?></a></h1></td>
+	<td align="right">
+		<a href="<?php print bp_url('bp_admin/index.php');?>" style="font-weight:bold;">Pages</a> 
+		&bull; <a href="<?php print bp_url('bp_admin/index.php?m=nav');?>">Navigation</a> 
+		&bull; <a href="<?php print bp_url('bp_admin/index.php?m=config');?>">Config</a> 
+		&bull; <a href="<?php print bp_url('bp_admin/login.php?logout');?>">Logout</a> 
+		<?php if (empty($bp_config['donate'])) { ?>
+		&bull; <a href="<?php print bp_url('bp_admin/index.php?m=donate');?>" class="bright">Donate!</a>
+		<? } ?>
+	</td></tr>
 </table>
 
 <?php
@@ -161,9 +169,9 @@ switch ($_GET['m']) {
 		if (empty($existing_pages)) { ?>
 		<div style="margin:10px 0px 15px;padding:15px;background-color:#fdd;" class="corners">
 			<h2 class="bright" style="margin-top:0px;">Getting Started</h3>
-			<div>BasicPages will help you quickly create a basic website.</div>
-			<div style="margin-top:10px;">First, let's create a Home page.</div>
-			<div style="margin-top:10px;">We'll use the "Business Profile" template to help you design the initial content.</div>
+			<div style="margin-top:10px;color:#666;">BasicPages will help you quickly create a basic website.</div>
+			<div style="margin-top:10px;color:#666;">First, let's create a Home page.</div>
+			<div style="margin-top:10px;color:#666;">We'll use the "Business Profile" template to help you design the initial content.</div>
 		</div>
 		<?php } elseif (count($existing_pages) == 1) { ?>
 		<script type="text/javascript">
@@ -176,10 +184,11 @@ switch ($_GET['m']) {
 		</script>
 		<div style="margin:10px 0px 15px;padding:15px;background-color:#fdd;" class="corners">
 			<h2 class="bright" style="margin-top:0px;">Next Steps</h3>
-			<div>Now that you have your first page, consider adding another with a different purpose, such as a display of your work, or maybe a contact form.</div>
-			<div style="margin-top:10px;">You can also edit your existing pages below.</div>
+			<div style="color:#666;margin-top:10px;">Now that you have your first page, consider adding another with a different purpose, such as a display of your work, or maybe a contact form.</div>
+			<div style="margin-top:10px;color:#666;">You can also edit your existing pages below.</div>
 		</div>
 		<?php } else { ?>
+		<script type="text/javascript" src="<?php print bp_url('bp_lib/js/jquery-ui-1.8.10.custom.min.js');?>"></script>
 		<script type="text/javascript">
 			$(document).ready(function() {
 				$("#new_page").hide();
@@ -222,24 +231,28 @@ switch ($_GET['m']) {
 		<?php
 		if (false === empty($existing_pages)) { 
 			?>
-			<h2><span style="color:#999;">or</span> Edit an Existing Page</h2>
-			<div style="padding:5px 0px;">
-			<table cellspacing="0" cellpadding="4" style="width:100%;">
-			<?php
-			$i = 1;
-			foreach ($existing_pages as $file => $details) {
-				$bgc = (($i % 2) == 1) ? '#f6f6ff' : '#fff';
-				?>
-				<tr style="color:#666;font-size:12px;background-color:<?php print $bgc;?>;">
-					<td style="padding:0px 0px 0px 22px;"><a href="<?php print bp_url($details['name']);?>" style="font-size:14px;" title="<?php print $details['name'];?>"><?php print ((strlen($details['name']) > 30) ? substr($details['name'], 0, 30).'...': $details['name']);?></a> <?php print $details['tag'];?></td>
-					<td style="padding-right:20px;width:110px;"><?php print (($details['status'] == 'Corrupt') ? '<span class="bright">'.$details['status'].'</span>' : $details['status']);?></td>
-					<td style="width:140px;"><?php print $details['actions'];?></td>
-				</tr>
+			<h2>Edit an Existing Page</h2>
+			<div style="font-weight:bold;padding:2px 0px 2px 12px;background-color:#eee;font-size:12px;">
+				<span class="page">&nbsp;</span><span class="title" style="float:left;width:340px;">Page</span><span style="float:right;padding-right:12px;">Actions</span>
+			</div>
+			<div>
+			<ul style="list-style:none;margin:0px;padding:0px;">
 				<?php
-				$i++;
-			}
-			?>
-			</table>
+				//grab only those in navigation
+				$i = 0;
+				foreach ($existing_pages as $file => $details) {
+					$bgc = (($i % 2) == 1) ? '#f6f6ff' : '#fff';
+					?>
+					<li style="height:18px;color:#666;font-size:12px;background-color:<?php print $bgc;?>;padding:4px 12px;">
+						<span class="status" style="color:#888;"><?php print (($details['status'] == 'Corrupt') ? '<span class="bright">'.$details['status'].'</span>' : $details['status']);?></span>
+						<span class="link" style="float:left;width:340px;font-size:13px;"><a href="<?php print bp_url($details['name']);?>" title="<?php print $details['name'];?>"><?php print ((strlen($details['name']) > 48) ? substr($details['name'], 0, 48).'…': $details['name']);?></a> <?php print $details['tag'];?></span>
+						<span style="float:right;" class="actions"><?php print $details['actions'];?></span>
+					</li>
+					<?php
+					$i++;
+				}
+				?>
+			</ul>
 			</div>
 			<?php
 		}
@@ -304,7 +317,6 @@ switch ($_GET['m']) {
 									$("div.wysiwyg ul.toolbar").after('<div class="imageupload" style="clear:both;padding:3px 4px;border-bottom:1px solid #eee;font-size:12px;background-color:#ffe;">Upload an Image (jpg/gif/png): <input type="file" name="image" /></div>'); 
 									$('input[type=file]').change(function() {
 										$(this).upload('<?php print bp_url("bp_admin/ajax.php");?>', { m: 'upload_image' }, function(res) {
-									    	//if we succeeded, insert the image and hide the bar
 											if (res.success == 1) {
 									        	self.insertHtml('<img src="'+res.msg+'" />'); 
 									        	self.saveContent();
@@ -407,7 +419,7 @@ switch ($_GET['m']) {
 		<h2 class="subdued">Editing <a href="<?php print bp_url($page);?>"><?php print ((strlen($page) > 20) ? substr($page, 0, 20).'...': $page);?></a></h2>
 		<div class="clear"></div>
 		<div style="padding:5px 0px;">
-			<noscript><div style="padding:5px;background-color:#fcc;width:628px;">Enable Javascript to use the wysiwyg editor.</div></noscript>
+			<noscript><div style="padding:5px;background-color:#fcc;width:628px;font-weight:bold;">Enable JavaScript to use the Wysiwyg Editor.</div></noscript>
 			<textarea name="content" style="width:635px;height:400px;"><?php print htmlentities($bp->edit()); ?></textarea>
 		</div>
 
@@ -465,6 +477,161 @@ switch ($_GET['m']) {
 		</form>
 		<?php
 		}
+	break;
+	//navigation editor
+	case 'nav':
+		?>
+		<script type="text/javascript" src="<?php print bp_url('bp_lib/js/jquery-ui-1.8.10.custom.min.js');?>"></script>
+		<script type="text/javascript">
+		$(document).ready(function() {
+			$(".save_nav").attr("disabled", "disabled");
+			$("#sortable").sortable({ 
+				containment: '#sortable', 
+				handle: '.move',
+				placeholder: 'placeholder',
+				tolerance: 'pointer',
+				forcePlaceholderSize: true,
+				update: function() {
+					$("#sortable li:odd").css({backgroundColor: '#f6f6ff'});
+					$("#sortable li:even").css({backgroundColor: '#fff'});
+					$(".save_nav").val('Save Changes').attr("disabled", "");
+					$("#save_msg").html('').removeClass('bright'); 
+				}
+			});
+			$("#sortable").disableSelection();
+			$(".remove").live('click', function() {
+				$(".save_nav").val('Save Changes').attr("disabled", "");
+				$("#save_msg").html('').removeClass('bright'); 
+				$(this).closest("li").addClass('rem_li').css({color:'#ccc'});
+				$(this).closest(".actions").html("Save to Remove").css({paddingRight: '10px'});
+				return false;
+			});
+			$(".edit").live('click', function() {
+				$(".save_nav").val('Save Changes').attr("disabled", "");
+				$("#save_msg").html('').removeClass('bright'); 
+				//set inputs
+				var page_text = $(this).closest("li").find(".page").attr('title');
+				var page_input = $('<input />');
+				page_input.width(280);
+				page_input.val(page_text);
+				page_input.addClass('input_edit').addClass('page');
+				if (page_text.substr(0,7) != 'http://' && page_text.substr(0,8) != 'https://') { page_input.attr("disabled", "disabled"); }
+				$(this).closest("li").find(".page").html(page_input);
+				var title_input = $('<input />');
+				title_input.width(180);
+				title_input.val($(this).closest("li").find(".title").attr('title'));
+				title_input.addClass('input_edit').addClass('title');
+				$(this).closest("li").find(".title").html(title_input);
+				return false;
+			});
+			$(".save_nav").click(function() {
+				$(".save_nav").val('Saving').attr("disabled", "disabled");
+				//retool inputs
+				$(".input_edit").each(function() {
+					var text = $(this).val();
+					//store
+					$(this).closest("span").attr('title', text);
+					//display
+					if ($(this).hasClass('title') && text.length > 28) { $(this).replaceWith(text.substr(0,28)+"..."); }
+					else if ($(this).hasClass('page') && text.length > 45) { $(this).replaceWith(text.substr(0,45)+"..."); }
+					else { $(this).replaceWith(text); }
+				});
+				//grab nav
+				var nav = {};
+				$("#sortable li").each(function() {
+					var page = $(this).find(".page").attr('title');
+					if (false === $(this).hasClass('rem_li')) { nav[page] = $(this).find(".title").attr('title'); }
+				});
+				$(".rem_li").fadeOut("fast").remove();
+				$("#sortable li:odd").css({backgroundColor: '#f6f6ff'});
+				$("#sortable li:even").css({backgroundColor: '#fff'});
+				//send nav to ajax for update
+				$.post('<?php print bp_url("bp_admin/ajax.php");?>', { m: 'nav_save', nav: nav }, function(data) {
+					if (data.success == 1) { 
+						$(".save_nav").val('Saved');
+						$("#save_msg").html(''); 
+					}
+					else { 
+						$(".save_nav").val('Save Failed');
+						$("#save_msg").html(data.msg).addClass('bright'); 
+					}
+				}, 'json');
+				return false;
+			});
+			//manual link
+			$("#add_link").click(function() {
+				var title = $("#link_title").val();
+				var link = $("#link_destination").val();
+				if (title.length <1 || link.length <1) { return false; }
+				var li = $("<li />");
+				li.css({padding:'4px 0px 4px 10px'});
+				var psp = $("<span />");
+				psp.addClass('page').attr('title', link);
+				if (link.length > 45) { psp.html(link.substr(0,45)+"..."); }
+				else { psp.html(link); }
+				var tsp = $("<span />");
+				tsp.addClass('title').attr('title', title).css({float: 'left', width: '198px'});
+				if (title.length > 28) { tsp.html(title.substr(0,28)+"..."); }
+				else { tsp.html(title); }
+				var asp = $("<span />");
+				asp.addClass('actions').css({float:'right'});
+				var ae = $("<a />");
+				ae.addClass('edit').attr({id: link, href:''}).html('Edit');
+				var ar = $("<a />");
+				ar.addClass('remove').attr({id: link, href:''}).html('Remove');
+				asp.append(ae).append(' &bull; ').append(ar).append(' &bull; ').append('<img src="<?php print bp_url('bp_admin/bp_move.gif');?>" alt="Move" class="move" style="width:16px;height:12px;padding:0px 10px 0px 0px;cursor:move;" />');
+				li.append(psp).append(tsp).append(asp);
+				$("#sortable").append(li);
+				$("#sortable li:odd").css({backgroundColor: '#f6f6ff'});
+				$("#sortable li:even").css({backgroundColor: '#fff'});
+				$(".save_nav").val('Save Changes').attr("disabled", "");
+				$("#save_msg").html('').removeClass('bright'); 
+				$("#link_title").val('');
+				$("#link_destination").val('');
+				return false;
+			});
+		});
+		</script>
+		<?php
+		if (empty($bp_config['navigation'])) { ?>
+		<div style="background:#fdd;margin-top:10px;" class="corners">
+			<div>Currently, there are no pages in your navigation.</div>
+			<div style="margin-top:10px;">To add a page while editing, check the "Navigation" box under "Advanced Options".</div>
+		</div>
+		<?php } else { ?>
+		<h2>Navigation Editor</h2>
+		<div class="tooltip">Update and re-arrange your navigation section here.<div style="float:right;"><span id="save_msg" style="font-size:11px;padding-right:5px;"></span><input type="submit" class="save_nav" value="Save Changes" /></div></div>
+		<div style="margin-top:10px;">
+			<noscript><div style="padding:4px;background-color:#fcc;font-weight:bold;">Enable JavaScript to use the Navigation Editor.</div></noscript>
+			<div style="font-weight:bold;padding:2px 0px 2px 12px;background-color:#eee;font-size:12px;">
+				<span class="page">Destination</span><span class="title" style="float:left;width:198px;">Link Title</span>
+			</div>
+			<ul id="sortable" style="list-style:none;margin:0px;padding:0px;color:#666;font-size:12px;">
+			<?php 
+			$i = 0; 
+			foreach ($bp_config['navigation'] as $nav_page => $nav_title) { 
+				$bgc = (($i % 2) == 1) ? '#f6f6ff' : '#fff';
+				?>
+				<li style="background-color:<?php print $bgc;?>;padding:4px 0px 4px 12px;">
+				<span class="page" title="<?php print $nav_page;?>"><?php print ((strlen($nav_page) > 45) ? substr($nav_page, 0, 45).'…' : $nav_page);?></span><span class="title" style="float:left;width:198px;" title="<?php print $nav_title;?>"><?php print ((strlen($nav_title) > 28) ? substr($nav_title, 0, 28).'…' : $nav_title);?></span><span style="float:right;" class="actions"><a class="edit" id="<?php print $nav_page;?>" href="">Edit</a> &bull; <a class="remove" id="<?php print $nav_page;?>" href="">Remove</a> &bull; <img src="<?php print bp_url('bp_admin/bp_move.gif');?>" alt="Move" class="move" style="width:16px;height:12px;padding:0px 10px 0px 0px;cursor:move;" /></span>
+				</li>
+				<?php 
+				$i++; 
+			} ?>
+			</ul>
+		</div>
+		<?php if (count($bp_config['navigation']) >9) { ?>
+		<div style="margin-top:10px;" align="right"><input type="submit" class="save_nav" value="Save Changes" /></div>
+		<?php } ?>
+		<h2 style="margin-top:25px;">Add an Outside Link</h2>
+		<div class="tooltip">You can add a link in your navigation to an outside website using this tool. Be sure to save the changes above.</div>
+		<div style="font-weight:bold;padding:2px 0px 2px 12px;background-color:#eee;font-size:12px;margin-top:10px;">
+			<span class="page">Destination</span><span class="title" style="float:left;width:198px;">Link Title</span>
+		</div>
+		<div style="padding:4px 0px 4px 12px;">
+		<span><input type="text" id="link_destination" style="width:280px;" /></span><span style="float:left;width:198px;"><input type="text" id="link_title" style="width:180px;" /></span><span style="float:right;"><input type="submit" id="add_link" value="Add Link"></span>
+		</div>
+		<?php } 
 	break;
 	//site admin
 	case 'config':
@@ -557,7 +724,7 @@ switch ($_GET['m']) {
 		$page = bp_admin_grab_page();
 		?>
 		<h2>Mark "<?php print $page;?>" as Home Page?</h2>
-		Visitors to <?php print $bp_config['url'];?> will see this page.
+		Visitors to "<?php print $bp_config['url'];?>" will see this page.  Also, if this page is in your navigation, we'll move it to the top.
 		<form action="<?php print bp_url('bp_admin/index.php');?>" method="post">
 		<div style="padding:10px 0px 0px;"><input type="hidden" name="page" value="<?php print $page;?>"><input type="submit" name="submit" value="Mark Home" /> or <input type="submit" name="submit" value="Cancel" /></div>
 		</form>
