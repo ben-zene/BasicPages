@@ -379,6 +379,11 @@ class bp_Content {
 	
 	/* Theme Handling */
 	
+	public function site_title() {
+		global $bp_config;
+		return @$bp_config['site_title'];
+	}
+	
 	//style
 	public function page_style($default='style.css') {
 		global $theme;
@@ -390,10 +395,12 @@ class bp_Content {
 		return $default;
 	}
 	
-	//site title
+	//site title. use the site set title in combination with the header (if available)
 	public function page_title() {
-		if (false === empty($this->interpreted['h1'])) { return strip_tags($this->interpreted['h1']); }
-		return 'BasicPages';
+		global $bp_config;
+		$prefix = ((false === empty($bp_config['site_title'])) ? $bp_config['site_title'].' | ' : 'BasicPages | ');
+		if (false === empty($this->interpreted['h1'])) { return rtrim($prefix.strip_tags($this->interpreted['h1']), '| '); }
+		return rtrim($prefix, '| ');
 	}
 	
 	//write out any extra meta tags

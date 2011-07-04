@@ -323,7 +323,7 @@ function bp_admin_check_rewrite() {
 function bp_admin_update_config() {
 	global $bp_config;
 	//which options do we allow to update?
-	$allowed = array('clean_url' => 'url_rewrite', 'theme_and_style' => 'default_theme', 'analytics_code' => 'analytics_code', 'admin_email' => 'admin_email');
+	$allowed = array('clean_url' => 'url_rewrite', 'theme_and_style' => 'default_theme', 'analytics_code' => 'analytics_code', 'admin_email' => 'admin_email', 'site_title' => 'site_title');
 	foreach ($allowed as $name => $option) {
 		switch ($name) {
 			case 'clean_url':
@@ -336,6 +336,7 @@ function bp_admin_update_config() {
 			break;
 			case 'analytics_code':
 			case 'admin_email':
+			case 'site_title':
 				$bp_config[$name] = $_POST[$option];
 			break;
 		}

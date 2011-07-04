@@ -308,6 +308,7 @@ switch ($_GET['m']) {
 					css : theme_style,
 					controls: { 
 						html: { visible: true },
+						code: { visible : false },
 						insertImage: {
 							groupIndex: 6,
 							visible: true,
@@ -636,9 +637,15 @@ switch ($_GET['m']) {
 	//site admin
 	case 'config':
 		$available_themes = bp_grab_themes();
+		$clean_urls = bp_admin_check_rewrite();
 		?>
 		<form action="" method="post">
-			<?php $clean_urls = bp_admin_check_rewrite(); ?>
+			<h2 style="margin-bottom:5px;">Site Title</h2>
+			<div class="tooltip">The name of your site.  This will be used in the title of each webpage to further brand awareness and consistency.</div>
+			<div style="padding: 5px 15px 10px;">
+				<input type="text" name="site_title" value="<?php print $bp_config['site_title'];?>" style="width:300px;" />
+			</div>
+			
 			<h2>Clean URLs</h2>
 			<div style="padding: 0px 15px 10px;">
 			<?php if (false === $clean_urls) { ?><input type="checkbox" name="clean_url" id="clean_url" disabled="disabled" /> <label for="clean_url"><span style="color:#666;">Enable Clean URLs (Not available due to a missing .htaccess file or not supported on your system)</span></label>
