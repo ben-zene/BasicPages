@@ -19,9 +19,10 @@
 	*/
 	$.wysiwyg.controls.link = {
 		init: function (Wysiwyg) {
-			var self = this, elements, dialog, szURL, a, selection,
+			var self = this, elements, dialog, url, a, selection,
 				formLinkHtml, formTextLegend, formTextUrl, formTextTitle, formTextTarget,
-				formTextSubmit, formTextReset;
+				formTextSubmit, formTextReset,
+				baseUrl;
 
 			formTextLegend  = "Insert Link";
 			formTextUrl     = "Link URL";
@@ -31,11 +32,11 @@
 			formTextReset   = "Cancel";
 
 			if ($.wysiwyg.i18n) {
-				formTextLegend = $.wysiwyg.i18n.t(formTextLegend, "dialogs");
-				formTextUrl    = $.wysiwyg.i18n.t(formTextUrl, "dialogs");
-				formTextTitle  = $.wysiwyg.i18n.t(formTextTitle, "dialogs");
-				formTextTarget = $.wysiwyg.i18n.t(formTextTarget, "dialogs");
-				formTextSubmit = $.wysiwyg.i18n.t(formTextSubmit, "dialogs");
+				formTextLegend = $.wysiwyg.i18n.t(formTextLegend, "dialogs.link");
+				formTextUrl    = $.wysiwyg.i18n.t(formTextUrl, "dialogs.link");
+				formTextTitle  = $.wysiwyg.i18n.t(formTextTitle, "dialogs.link");
+				formTextTarget = $.wysiwyg.i18n.t(formTextTarget, "dialogs.link");
+				formTextSubmit = $.wysiwyg.i18n.t(formTextSubmit, "dialogs.link");
 				formTextReset  = $.wysiwyg.i18n.t(formTextReset, "dialogs");
 			}
 
@@ -73,27 +74,32 @@
 
 				dialog.dialog({
 					modal: true,
-					width: Wysiwyg.defaults.formWidth,
-					height: Wysiwyg.defaults.formHeight,
 					open: function (ev, ui) {
 						$("input:submit", dialog).click(function (e) {
 							e.preventDefault();
 
-							var szURL = $('input[name="linkhref"]', dialog).val(),
+							var url = $('input[name="linkhref"]', dialog).val(),
 								title = $('input[name="linktitle"]', dialog).val(),
-								target = $('input[name="linktarget"]', dialog).val();
+								target = $('input[name="linktarget"]', dialog).val(),
+								baseUrl;
+
+							if (Wysiwyg.options.controlLink.forceRelativeUrls) {
+								baseUrl = window.location.protocol + "//" + window.location.hostname;
+								if (0 === url.indexOf(baseUrl)) {
+									url = url.substr(baseUrl.length);
+								}
+							}
 
 							if (a.self) {
-								if ("string" === typeof (szURL)) {
-									if (szURL.length > 0) {
+								if ("string" === typeof (url)) {
+									if (url.length > 0) {
 										// to preserve all link attributes
-										$(a.self).attr("href", szURL).attr("title", title).attr("target", target);
+										$(a.self).attr("href", url).attr("title", title).attr("target", target);
 									} else {
 										$(a.self).replaceWith(a.self.innerHTML);
 									}
 								}
 							} else {
-
 								if ($.browser.msie) {
 									Wysiwyg.ui.returnRange();
 								}
@@ -107,20 +113,29 @@
 										Wysiwyg.ui.focus();
 									}
 
-									if ("string" === typeof (szURL)) {
-										if (szURL.length > 0) {
-											Wysiwyg.editorDoc.execCommand("createLink", false, szURL);
+									if ("string" === typeof (url)) {
+										if (url.length > 0) {
+											Wysiwyg.editorDoc.execCommand("createLink", false, url);
 										} else {
 											Wysiwyg.editorDoc.execCommand("unlink", false, null);
 										}
 									}
 
-									a = Wysiwyg.dom.getElement("a");
-									$(a).attr("href", szURL).attr("title", title).attr("target", target);
+									a.self = Wysiwyg.dom.getElement("a");
+
+									$(a.self).attr("href", url).attr("title", title);
+
+									/**
+									 * @url https://github.com/akzhan/jwysiwyg/issues/16
+									 */
+									$(a.self).attr("target", target);
 								} else if (Wysiwyg.options.messages.nonSelection) {
 									window.alert(Wysiwyg.options.messages.nonSelection);
 								}
 							}
+
+							Wysiwyg.saveContent();
+
 							$(dialog).dialog("close");
 						});
 						$("input:reset", dialog).click(function (e) {
@@ -134,11 +149,18 @@
 				});
 			} else {
 				if (a.self) {
-					szURL = window.prompt("URL", a.href);
+					url = window.prompt("URL", a.href);
 
-					if ("string" === typeof (szURL)) {
-						if (szURL.length > 0) {
-							$(a.self).attr("href", szURL);
+					if (Wysiwyg.options.controlLink.forceRelativeUrls) {
+						baseUrl = window.location.protocol + "//" + window.location.hostname;
+						if (0 === url.indexOf(baseUrl)) {
+							url = url.substr(baseUrl.length);
+						}
+					}
+
+					if ("string" === typeof (url)) {
+						if (url.length > 0) {
+							$(a.self).attr("href", url);
 						} else {
 							$(a.self).replaceWith(a.self.innerHTML);
 						}
@@ -153,11 +175,18 @@
 							Wysiwyg.ui.focus();
 							Wysiwyg.editorDoc.execCommand("createLink", true, null);
 						} else {
-							szURL = window.prompt(formTextUrl, a.href);
+							url = window.prompt(formTextUrl, a.href);
 
-							if ("string" === typeof (szURL)) {
-								if (szURL.length > 0) {
-									Wysiwyg.editorDoc.execCommand("createLink", false, szURL);
+							if (Wysiwyg.options.controlLink.forceRelativeUrls) {
+								baseUrl = window.location.protocol + "//" + window.location.hostname;
+								if (0 === url.indexOf(baseUrl)) {
+									url = url.substr(baseUrl.length);
+								}
+							}
+
+							if ("string" === typeof (url)) {
+								if (url.length > 0) {
+									Wysiwyg.editorDoc.execCommand("createLink", false, url);
 								} else {
 									Wysiwyg.editorDoc.execCommand("unlink", false, null);
 								}
@@ -167,21 +196,15 @@
 						window.alert(Wysiwyg.options.messages.nonSelection);
 					}
 				}
+
+				Wysiwyg.saveContent();
 			}
 
-			$(Wysiwyg.editorDoc).trigger("wysiwyg:refresh");
+			$(Wysiwyg.editorDoc).trigger("editorRefresh.wysiwyg");
 		}
 	};
 
-	$.wysiwyg.createLink = function (object, szURL) {
-		if ("object" !== typeof (object) || !object.context) {
-			object = this;
-		}
-
-		if (!object.each) {
-			console.error("Something goes wrong, check object");
-		}
-
+	$.wysiwyg.createLink = function (object, url) {
 		return object.each(function () {
 			var oWysiwyg = $(this).data("wysiwyg"),
 				selection;
@@ -190,7 +213,7 @@
 				return this;
 			}
 
-			if (!szURL || szURL.length === 0) {
+			if (!url || url.length === 0) {
 				return this;
 			}
 
@@ -201,7 +224,7 @@
 					oWysiwyg.ui.focus();
 				}
 				oWysiwyg.editorDoc.execCommand("unlink", false, null);
-				oWysiwyg.editorDoc.execCommand("createLink", false, szURL);
+				oWysiwyg.editorDoc.execCommand("createLink", false, url);
 			} else if (oWysiwyg.options.messages.nonSelection) {
 				window.alert(oWysiwyg.options.messages.nonSelection);
 			}
