@@ -388,7 +388,7 @@ function bp_write_config($new_config, $reason) {
 
 //return the current version number
 function bp_version() {
-	return '1.1';
+	return '1.2';
 }
 
 //do a call out to see what version of basicpages is the current version
